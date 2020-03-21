@@ -11,7 +11,6 @@ let CreateCell (x,y, seedRule) =
     let aliveness = if seedRule(x,y) then Alive else Dead 
     { aliveness = aliveness; position = {x=x; y=y}}
 
-
 let CreateRow (y, boardWidth, seedRule) = 
   [1..boardWidth] |> List.map (fun x -> CreateCell(x,y, seedRule)) 
 
@@ -44,7 +43,7 @@ let ShouldSpawn cluster =
     aliveNeighbours = 3
 
 let newState (cluster) = 
-    let cell = cluster.cell 
+    let cell = cluster.cell
     match cell.aliveness with
     | Dead -> if ShouldSpawn(cluster) then {cell with aliveness=Alive} else cell
     | Alive -> if ShouldDie(cluster) then  {cell with aliveness=Dead} else cell
