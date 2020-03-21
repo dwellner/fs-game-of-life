@@ -46,8 +46,8 @@ let ShouldSpawn cluster =
 let newState (cluster) = 
     let cell = cluster.cell 
     match cell.aliveness with
-    | Dead -> if ShouldSpawn(cluster) then {aliveness=Alive;position=cell.position} else cell
-    | Alive -> if ShouldDie(cluster) then  {aliveness=Dead;position=cell.position} else cell
+    | Dead -> if ShouldSpawn(cluster) then {cell with aliveness=Alive} else cell
+    | Alive -> if ShouldDie(cluster) then  {cell with aliveness=Dead} else cell
 
 let Regenerate board =
     let toCluster cell = {cell=cell; neigbours = GetNeighbours(cell,board)}
