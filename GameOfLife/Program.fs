@@ -4,4 +4,9 @@
    Tick(GameOfLife.Regenerate(board))
 
 let random = System.Random()
-Tick(GameOfLife.NewBoard(100,25, fun (x,y) -> random.Next()%2=0))
+let seedRule (_) = 
+   match random.Next()%2 with 
+      | 0-> GameOfLife.Alive
+      | _ -> GameOfLife.Dead
+
+Tick(GameOfLife.NewBoard(100,25, seedRule)) 

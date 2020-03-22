@@ -7,53 +7,55 @@ type Cell = {aliveness: Aliveness; position: Position}
 type Board = Cell list
 type Cluster = { cell: Cell; neigbours : Cell list}
 
-let CreateCell (x,y, seedRule) = 
-    let aliveness = if seedRule(x,y) then Alive else Dead 
-    { aliveness = aliveness; position = {x=x; y=y}}
+type SeedRule = int*int->Aliveness 
 
-let CreateRow (y, boardWidth, seedRule) = 
-  [1..boardWidth] |> List.map (fun x -> CreateCell(x,y, seedRule)) 
+let private createCell (x,y, seedRule) = 
+    { aliveness = seedRule(x,y); position = {x=x; y=y}}
 
-let NewBoard (boardWidth, boardHeight, seedRule):Board = 
-    let createRow y = CreateRow(y, boardWidth, seedRule)
+let private createRow (y, boardWidth, seedRule) = 
+  [1..boardWidth] |> List.map (fun x -> createCell(x,y, seedRule)) 
+
+let NewBoard (boardWidth:int, boardHeight: int, seedRule: SeedRule):Board = 
+    let createRow y = createRow(y, boardWidth, seedRule)
     [1..boardHeight] |> List.map createRow  |> List.reduce List.append
 
-let GetAliveNeighbourCount cluster = 
+let private getAliveNeighbourCount cluster = 
     cluster.neigbours 
         |> List.map (fun cell -> cell.aliveness)
         |> List.sumBy(function Alive -> 1 | _ -> 0 ) 
 
-let IsNeigbour (self: Position, other: Position) =
+let private isNeigbour (self: Position, other: Position) =
     other.x >= self.x-1 && other.x <= self.x+1 && 
     other.y >= self.y-1 && other.y <= self.y+1 &&
     not (other.x = self.x && other.y = self.y);
 
 
-let GetNeighbours (cell, board) = 
-    board |> List.filter (fun aCell -> IsNeigbour(cell.position, aCell.position)) 
+let private getNeighbours (cell, board) = 
+    board |> List.filter (fun aCell -> isNeigbour(cell.position, aCell.position)) 
 
-let ShouldDie cluster = 
-    let aliveNeighbours = GetAliveNeighbourCount cluster 
+let private shouldDie cluster = 
+    let aliveNeighbours = getAliveNeighbourCount cluster 
     //Any live cell with two or three neighbors survives.
     not (List.contains aliveNeighbours [2;3])
 
-let ShouldSpawn cluster =   
-    let aliveNeighbours = GetAliveNeighbourCount cluster 
+let private shouldSpawn cluster =   
+    let aliveNeighbours = getAliveNeighbourCount cluster 
     //Any dead cell with three live neighbors becomes a live cell.
     aliveNeighbours = 3
 
 let newState (cluster) = 
     let cell = cluster.cell
     match cell.aliveness with
-    | Dead -> if ShouldSpawn(cluster) then {cell with aliveness=Alive} else cell
-    | Alive -> if ShouldDie(cluster) then  {cell with aliveness=Dead} else cell
+    | Dead when shouldSpawn(cluster) -> {cell with aliveness=Alive} 
+    | Alive when shouldDie(cluster) ->  {cell with aliveness=Dead}
+    | _ -> cell
 
 let Regenerate board =
-    let toCluster cell = {cell=cell; neigbours = GetNeighbours(cell,board)}
+    let toCluster cell = {cell=cell; neigbours = getNeighbours(cell,board)}
     List.map (toCluster >> newState) board
 
 
-let Print (board:Board) =
+let Print board =
     let {x=maxX; y=maxY} = (board |> List.rev  |> List.head) |> fun cell -> cell.position    
 
     System.Console.Clear()
