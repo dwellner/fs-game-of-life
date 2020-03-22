@@ -1,5 +1,5 @@
 ﻿let rec Tick board = 
-   ConsoleUi.Print board
+   ConsoleUi.print board
    Async.Sleep 500 |> ignore
    GameOfLife.Regenerate board |> Tick
 

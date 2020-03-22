@@ -2,26 +2,25 @@ module ConsoleUi
 
 open GameOfLife
 
-type private PrintableRow = {y: int; cells: Cell List }
+let private printCell cell = match cell.aliveness with 
+                                | Alive -> printf "X" 
+                                | Dead -> printf " "
 
-let Print board =
-    let toPrintableBoard printableRows cell = 
-        let isSameRow row = cell.position.y = row.y
-        let row = match List.tryFind isSameRow printableRows with
-                                | Some r -> r
-                                | None -> {y=cell.position.y; cells=[]}
+let print board =
+    let getCellX cell = cell.position.x
+    let getCellY cell = cell.position.y
+    let equalsCellY y cell = getCellY cell = y
+    let getRow y = board |> List.filter (equalsCellY y)
 
-        let newRow = {row with cells=cell::row.cells }
-        newRow :: (printableRows |> List.filter (not << isSameRow)) 
-
-    let printCell cell = match cell.aliveness with Alive -> printf "X" | Dead -> printf " "
-
-    let printRow row =
-        row.cells |> List.sortBy (fun cell -> cell.position.x) |> List.iter printCell 
+    let printCells cells =
+        cells |> List.sortBy getCellX |> List.iter printCell
         printfn ""
 
     System.Console.Clear()
     board 
-    |> List.fold toPrintableBoard []
-    |> List.sortBy (fun row -> row.y)
-    |> List.iter printRow
+    |> List.map getCellY 
+    |> Seq.distinct
+    |> Seq.toList
+    |> List.sort
+    |> List.map getRow
+    |> List.iter printCells
