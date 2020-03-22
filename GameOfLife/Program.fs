@@ -1,7 +1,7 @@
-﻿let rec Tick(board) = 
-   GameOfLife.Print board |> ignore
-   Async.Sleep(500) |> ignore
-   Tick(GameOfLife.Regenerate(board))
+﻿let rec Tick board = 
+   GameOfLife.Print board
+   Async.Sleep 500 |> ignore
+   GameOfLife.Regenerate board |> Tick
 
 let random = System.Random()
 let seedRule (_) = 
@@ -9,4 +9,4 @@ let seedRule (_) =
       | 0-> GameOfLife.Alive
       | _ -> GameOfLife.Dead
 
-Tick(GameOfLife.NewBoard(100,25, seedRule)) 
+GameOfLife.NewBoard 100 25 seedRule |> Tick 
