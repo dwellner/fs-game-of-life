@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Compile Include="GameOfLife.fs" />
+    <Compile Include="ConsoleUi.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

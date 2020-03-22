@@ -1,4 +1,3 @@
-// GameOfLife.fs
 module GameOfLife
 
 type Position = {x: int; y: int}
@@ -22,24 +21,20 @@ let private getAliveNeighbourCount cluster =
         |> List.map (fun cell -> cell.aliveness)
         |> List.sumBy(function Alive -> 1 | _ -> 0 ) 
 
-let private isNeigbour (self: Position) (other: Position) =
+let private isNeigbour {position=self} {position=other} =
     other.x >= self.x-1 && other.x <= self.x+1 && 
     other.y >= self.y-1 && other.y <= self.y+1 &&
     not (other.x = self.x && other.y = self.y);
 
+//Any live cell with two or three neighbors survives.
+let private shouldDie cluster = match getAliveNeighbourCount cluster with 
+                                | 2 -> false
+                                | 3 -> false
+                                | _ -> true
 
-let private getNeighbours cell board = 
-    board |> List.filter ((fun acell -> acell.position) >> isNeigbour cell.position)
 
-let private shouldDie cluster = 
-    let aliveNeighbours = getAliveNeighbourCount cluster 
-    //Any live cell with two or three neighbors survives.
-    not (List.contains aliveNeighbours [2;3])
-
-let private shouldSpawn cluster =   
-    let aliveNeighbours = getAliveNeighbourCount cluster 
-    //Any dead cell with three live neighbors becomes a live cell.
-    aliveNeighbours = 3
+//Any dead cell with three live neighbors becomes a live cell.
+let private shouldSpawn cluster = getAliveNeighbourCount cluster = 3
 
 let newState cluster = 
     let cell = cluster.cell
@@ -49,30 +44,6 @@ let newState cluster =
     | _ -> cell
 
 let Regenerate board =
-    let toCluster cell = {cell=cell; neigbours = getNeighbours cell board}
+    let getNeighbours cell = board |> List.filter (isNeigbour cell)
+    let toCluster cell = {cell=cell; neigbours = getNeighbours cell}
     List.map (toCluster >> newState) board
-
-
-type private PrintableRow = {y: int; cells: Cell List }
-
-let Print board =
-    let toPrintableBoard printableRows cell = 
-        let isSameRow row = cell.position.y = row.y
-        let row = match List.tryFind isSameRow printableRows with
-                                | Some r -> r
-                                | None -> {y=cell.position.y; cells=[]}
-
-        let newRow = {row with cells=cell::row.cells |> List.sortBy (fun cell -> cell.position.x)}
-        newRow :: (printableRows |> List.filter (isSameRow >> not)) 
-
-    let printableBoard = board |> List.fold toPrintableBoard [] |> List.sortBy (fun row -> row.y)
-
-    System.Console.Clear()
-
-    for row in printableBoard do
-        for cell in row.cells do
-            match cell.aliveness with
-            | Alive -> printf "X"
-            | Dead -> printf " "
-        printfn ""
-    printfn ""

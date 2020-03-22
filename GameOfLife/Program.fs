@@ -1,5 +1,5 @@
 ﻿let rec Tick board = 
-   GameOfLife.Print board
+   ConsoleUi.Print board
    Async.Sleep 500 |> ignore
    GameOfLife.Regenerate board |> Tick
 
@@ -9,4 +9,4 @@ let seedRule (_) =
       | 0-> GameOfLife.Alive
       | _ -> GameOfLife.Dead
 
-GameOfLife.NewBoard 100 25 seedRule |> Tick 
+GameOfLife.NewBoard 100 25 seedRule |> Tick
