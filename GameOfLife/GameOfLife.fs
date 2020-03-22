@@ -55,18 +55,26 @@ let Regenerate board =
     List.map (toCluster >> newState) board
 
 
+type private PrintableRow = {y: int; cells: Cell List }
+
 let Print board =
-    let {x=maxX; y=maxY} = (board |> List.rev  |> List.head) |> fun cell -> cell.position    
+    let toPrintableBoard printableRows cell = 
+        let isSameRow row = cell.position.y = row.y
+        let row = match List.tryFind isSameRow printableRows with
+                                | Some r -> r
+                                | None -> {y=cell.position.y; cells=[]}
+
+        let newRow = {row with cells=cell::row.cells |> List.sortBy (fun cell -> cell.position.x)}
+        newRow :: (printableRows |> List.filter (isSameRow >> not)) 
+
+    let printableBoard = board |> List.fold toPrintableBoard [] |> List.sortBy (fun row -> row.y)
 
     System.Console.Clear()
 
-    for y = 1 to maxY do
-        for x = 1 to maxX do
-            let cell = board |> List.find (fun cell -> cell.position.x = x && cell.position.y = y)
+    for row in printableBoard do
+        for cell in row.cells do
             match cell.aliveness with
             | Alive -> printf "X"
             | Dead -> printf " "
         printfn ""
     printfn ""
-
-//Main.fs
