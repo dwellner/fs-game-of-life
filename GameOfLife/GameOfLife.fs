@@ -10,7 +10,7 @@ type Cluster = { cell: Cell; neigbours : Cell list}
 type SeedRule = int*int->Aliveness 
 
 let private createRow y boardWidth seedRule = 
-    let createCell x = { aliveness = seedRule (x,y); position = {x=x; y=y}}
+    let createCell x = { aliveness = seedRule(x,y); position = {x=x; y=y}}
     [1..boardWidth] |> List.map createCell
 
 let NewBoard boardWidth boardHeight (seedRule: SeedRule):Board = 
@@ -45,7 +45,7 @@ let newState cluster =
     let cell = cluster.cell
     match cell.aliveness with
     | Dead when shouldSpawn cluster -> {cell with aliveness=Alive} 
-    | Alive when shouldDie cluster -> {cell with aliveness=Dead}
+    | Alive when shouldDie cluster ->  {cell with aliveness=Dead}
     | _ -> cell
 
 let Regenerate board =
